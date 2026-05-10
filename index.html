@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enervia Pipeline — Technical Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0f14;
+  --surface: #131920;
+  --surface2: #1a2130;
+  --border: #252e3a;
+  --border2: #2e3a4a;
+  --green: #29a65e;
+  --green-light: #3dcc75;
+  --green-dim: #0d2218;
+  --blue: #4d9fff;
+  --blue-dim: #0d1f35;
+  --red: #f05050;
+  --red-dim: #280c0c;
+  --amber: #dba63a;
+  --amber-dim: #271900;
+  --purple: #9d72f5;
+  --purple-dim: #1a1230;
+  --teal: #2ec4b0;
+  --teal-dim: #061e1c;
+  --text: #dce7f0;
+  --text2: #8a9bb0;
+  --text3: #576070;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Sora', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;}
+a{color:var(--blue);}
+
+/* HEADER */
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px;}
+.logo{width:34px;height:34px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:16px;color:#fff;flex-shrink:0;letter-spacing:-1px;}
+.hdr-title{font-size:17px;font-weight:600;}
+.hdr-sub{font-size:12px;color:var(--text2);margin-left:6px;}
+.hdr-badge{margin-left:auto;background:var(--green-dim);border:1px solid var(--green);border-radius:20px;padding:3px 12px;font-size:11px;color:var(--green);font-family:var(--mono);}
+
+/* TABS */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;display:flex;gap:0;}
+.tab{padding:13px 22px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none;letter-spacing:.01em;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--green-light);border-bottom-color:var(--green);}
+
+/* CONTENT */
+.content{padding:32px;max-width:1100px;margin:0 auto;}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+.sec-title{font-size:20px;font-weight:600;margin-bottom:6px;}
+.sec-sub{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.7;max-width:760px;}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:24px;}
+.leg-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+
+/* FLOWCHART CONTAINER */
+.fc-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:auto;padding:20px 8px;text-align:center;}
+.fc-wrap svg{max-width:100%;}
+
+/* PSEUDOCODE */
+.ps-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.ps-topbar{background:var(--surface2);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:10px;}
+.ps-dot{width:10px;height:10px;border-radius:50%;}
+.ps-filename{font-family:var(--mono);font-size:12px;color:var(--text2);margin-left:4px;}
+.ps-body{padding:24px 28px;font-family:var(--mono);font-size:12.5px;line-height:2;overflow-x:auto;white-space:pre;}
+.kw{color:#c792ea;}
+.mod{color:#82aaff;}
+.cmt{color:var(--text3);}
+.nm{color:#f78c6c;}
+.val{color:#c3e88d;}
+.str{color:#c3e88d;}
+.safe{color:#3dcc75;font-weight:600;}
+.blk{color:#f05050;font-weight:600;}
+.sec{color:var(--amber);font-weight:600;}
+.arrow{color:var(--text3);}
+.out{color:#3dcc75;}
+.num{color:#f07178;}
+.lbl{color:#89ddff;}
+
+/* MODULE CARDS */
+.mod-grid{display:flex;flex-direction:column;gap:20px;}
+.mod-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.mod-card.gk{border-color:var(--red);}
+.mod-card.blue-card{border-color:var(--blue);}
+.mod-card.purple-card{border-color:var(--purple);}
+/* flex-wrap so head content never escapes card on narrow viewports */
+.mc-head{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;}
+.gk .mc-head{background:rgba(240,80,80,.05);}
+.mc-num{min-width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:13px;flex-shrink:0;}
+/* min-width:0 is required on flex children to allow shrinking below content size */
+.mc-info{flex:1;min-width:0;overflow:hidden;}
+.mc-name{font-size:16px;font-weight:600;overflow-wrap:break-word;}
+/* monospace class strings can be very long — allow wrapping */
+.mc-cls{font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px;overflow-wrap:break-word;word-break:break-word;white-space:normal;}
+/* desc sits to the right but must also shrink */
+.mc-desc{font-size:13px;color:var(--text2);margin-left:auto;max-width:380px;min-width:0;text-align:right;line-height:1.5;flex-shrink:1;overflow-wrap:break-word;}
+/* grid children need min-width:0 or tables will blow past column bounds */
+.mc-body{padding:18px 22px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+.mc-body > div{min-width:0;overflow:hidden;}
+@media(max-width:750px){.mc-body{grid-template-columns:1fr;}}
+.mc-sect{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+/* table-layout:fixed forces columns to respect their container width */
+.vt{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
+.vt tr{border-bottom:1px solid var(--border);}
+.vt tr:last-child{border-bottom:none;}
+.vt td{padding:5px 4px;vertical-align:top;line-height:1.5;overflow-wrap:break-word;word-break:break-word;}
+/* Fixed column widths: name 38%, type 24%, desc 38% */
+.vt td:nth-child(1){width:38%;}
+.vt td:nth-child(2){width:24%;}
+.vt td:nth-child(3){width:38%;}
+/* Remove white-space:nowrap — was the primary cause of overflow */
+.v-name{font-family:var(--mono);color:var(--blue);padding-right:6px;overflow-wrap:break-word;word-break:break-word;}
+.v-type{font-family:var(--mono);color:var(--purple);font-size:10.5px;padding-right:6px;overflow-wrap:break-word;word-break:break-word;}
+.v-desc{color:var(--text2);overflow-wrap:break-word;}
+.chip{display:inline-block;padding:2px 8px;border-radius:4px;font-family:var(--mono);font-size:10px;margin:2px 2px 2px 0;}
+.chip-g{background:var(--green-dim);color:var(--green-light);border:1px solid var(--green);}
+.chip-r{background:var(--red-dim);color:var(--red);border:1px solid var(--red);}
+.chip-a{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber);}
+.chip-b{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue);}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">Ev</div>
+  <div>
+    <span class="hdr-title">Enervia System Pipeline</span>
+    <span class="hdr-sub">— Technical Documentation</span>
+  </div>
+  <div class="hdr-badge">Phase-1 · Advisory Only</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flowchart')">&#9673; Pipeline Flowchart</div>
+  <div class="tab" onclick="showTab('pseudocode')">&#9654; Pseudocode</div>
+  <div class="tab" onclick="showTab('modules')">&#9776; Module Reference</div>
+</div>
+
+<div class="content">
+
+<!-- ─── TAB 1: FLOWCHART ─── -->
+<div id="tab-flowchart" class="tab-pane active">
+  <div class="sec-title">End-to-End Pipeline Flowchart</div>
+  <div class="sec-sub">
+    Raw telemetry enters at Module 1 and flows through validation, state tracking, safety gating, parallel context analysis, dual optimization, and savings quantification before a human-readable recommendation is generated. The <strong style="color:var(--red)">Safety Engine (M4)</strong> is the mandatory gatekeeper — no optimization can proceed if it returns BLOCKED.
+  </div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Core pipeline</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Safety gatekeeper</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>Context engines</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>HALT paths</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Audit log (cross-cutting)</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--text3);border-radius:0;height:2px;width:20px;margin:5px 0;"></div>Dashed = skip path</div>
+  </div>
+
+  <div class="fc-wrap">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 1090" width="860" style="font-family:'Sora',sans-serif;">
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M2 2L8 5L2 8" fill="none" stroke="#576070" stroke-width="1.8" stroke-linecap="round"/>
+  </marker>
+  <marker id="ar-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M2 2L8 5L2 8" fill="none" stroke="#29a65e" stroke-width="1.8" stroke-linecap="round"/>
+  </marker>
+  <marker id="ar-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M2 2L8 5L2 8" fill="none" stroke="#f05050" stroke-width="1.8" stroke-linecap="round"/>
+  </marker>
+  <marker id="ar-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M2 2L8 5L2 8" fill="none" stroke="#dba63a" stroke-width="1.8" stroke-linecap="round"/>
+  </marker>
+  <marker id="ar-p" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M2 2L8 5L2 8" fill="none" stroke="#9d72f5" stroke-width="1.6" stroke-linecap="round"/>
+  </marker>
+</defs>
+
+<!-- BG -->
+<rect width="880" height="1090" fill="#0b0f14"/>
+
+<!-- ═══════ MODULE 1 ═══════ -->
+<rect x="330" y="30" width="220" height="62" rx="8" fill="#131920" stroke="#29a65e" stroke-width="1.5"/>
+<text x="344" y="52" fill="#29a65e" font-size="10" font-family="'JetBrains Mono',monospace" font-weight="600">MODULE 1</text>
+<text x="440" y="72" fill="#dce7f0" font-size="14" font-weight="600" text-anchor="middle">Data Ingestion</text>
+<text x="440" y="86" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">EnerviaIngestion</text>
+
+<!-- Arrow M1→M2 -->
+<line x1="440" y1="92" x2="440" y2="128" stroke="#576070" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<!-- ═══════ MODULE 2 ═══════ -->
+<rect x="330" y="132" width="220" height="62" rx="8" fill="#131920" stroke="#29a65e" stroke-width="1.5"/>
+<text x="344" y="154" fill="#29a65e" font-size="10" font-family="'JetBrains Mono',monospace" font-weight="600">MODULE 2</text>
+<text x="440" y="174" fill="#dce7f0" font-size="14" font-weight="600" text-anchor="middle">Data Validation</text>
+<text x="440" y="188" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">EnerviaValidation</text>
+
+<!-- INVALID branch -->
+<line x1="550" y1="163" x2="614" y2="163" stroke="#dba63a" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ar-a)"/>
+<rect x="618" y="143" width="162" height="40" rx="6" fill="#271900" stroke="#dba63a" stroke-width="1"/>
+<text x="699" y="159" fill="#dba63a" font-size="10" font-family="'JetBrains Mono',monospace" text-anchor="middle" font-weight="600">if INVALID</text>
+<text x="699" y="175" fill="#f05050" font-size="11" font-weight="600" text-anchor="middle">&#8594; HALT PIPELINE</text>
+
+<!-- valid label + arrow down -->
+<text x="458" y="120" fill="#576070" font-size="10" font-family="'JetBrains Mono',monospace">if valid &#8595;</text>
+
+<!-- Arrow M2→M3 -->
+<line x1="440" y1="194" x2="440" y2="270" stroke="#576070" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="458" y="240" fill="#576070" font-size="10" font-family="'JetBrains Mono',monospace">&#8595; state update</text>
+
+<!-- ═══════ MODULE 3 ═══════ -->
+<rect x="330" y="274" width="220" height="62" rx="8" fill="#131920" stroke="#29a65e" stroke-width="1.5"/>
+<text x="344" y="296" fill="#29a65e" font-size="10" font-family="'JetBrains Mono',monospace" font-weight="600">MODULE 3</text>
+<text x="440" y="316" fill="#dce7f0" font-size="14" font-weight="600" text-anchor="middle">State Store</text>
+<text x="440" y="330" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">EnerviaStateStore</text>
+
+<!-- Arrow M3→M4 -->
+<line x1="440" y1="336" x2="440" y2="372" stroke="#576070" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<!-- ═══════ MODULE 4 — GATEKEEPER ═══════ -->
+<!-- Outer glow border -->
+<rect x="324" y="374" width="232" height="72" rx="11" fill="#1a0808" stroke="#f05050" stroke-width="2.5" stroke-dasharray="6 2"/>
+<!-- Inner box -->
+<rect x="330" y="380" width="220" height="60" rx="8" fill="#1e0d0d" stroke="#f05050" stroke-width="1.5"/>
+<text x="344" y="400" fill="#f05050" font-size="10" font-family="'JetBrains Mono',monospace" font-weight="600">MODULE 4 — GLOBAL GATEKEEPER</text>
+<text x="440" y="421" fill="#dce7f0" font-size="14" font-weight="600" text-anchor="middle">Safety Engine</text>
+<text x="440" y="434" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">EnerviaSafetyEngine</text>
+
+<!-- BLOCKED branch -->
+<line x1="550" y1="410" x2="614" y2="410" stroke="#f05050" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ar-r)"/>
+<rect x="618" y="390" width="162" height="40" rx="6" fill="#280c0c" stroke="#f05050" stroke-width="1"/>
+<text x="699" y="406" fill="#f05050" font-size="10" font-family="'JetBrains Mono',monospace" text-anchor="middle" font-weight="600">if BLOCKED</text>
+<text x="699" y="422" fill="#f05050" font-size="11" font-weight="600" text-anchor="middle">&#8594; HALT + AUDIT</text>
+
+<!-- safe label -->
+<text x="458" y="364" fill="#576070" font-size="10" font-family="'JetBrains Mono',monospace">if SAFE &#8595;</text>
+
+<!-- Fork from M4 bottom to M5 and M6 -->
+<line x1="440" y1="446" x2="440" y2="478" stroke="#29a65e" stroke-width="1.5"/>
+<line x1="175" y1="478" x2="705" y2="478" stroke="#29a65e" stroke-width="1.2"/>
+<!-- left arrow to M5 -->
+<line x1="175" y1="478" x2="175" y2="497" stroke="#4d9fff" stroke-width="1.5" marker-end="url(#ar-g)"/>
+<!-- right arrow to M6 -->
+<line x1="705" y1="478" x2="705" y2="497" stroke="#4d9fff" stroke-width="1.5" marker-end="url(#ar-g)"/>
+<text x="440" y="471" fill="#29a65e" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">parallel context analysis &#8595;</text>
+
+<!-- ═══════ MODULE 5 (left) ═══════ -->
+<rect x="65" y="500" width="220" height="62" rx="8" fill="#0c1520" stroke="#4d9fff" stroke-width="1.5"/>
+<text x="79" y="522" fill="#4d9fff" font-size="10" font-family="'JetBrains Mono',monospace" font-weight="600">MODULE 5</text>
+<text x="175" y="542" fill="#dce7f0" font-size="14" font-weight="600" text-anchor="middle">Cost Context</text>
+<text x="175" y="556" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">EnerviaCostContext</text>
+
+<!-- ═══════ MODULE 6 (right) ═══════ -->
+<rect x="595" y="500" width="220" height="62" rx="8" fill="#0c1520" stroke="#4d9fff" stroke-width="1.5"/>
+<text x="609" y="522" fill="#4d9fff" font-size="10" font-family="'JetBrains Mono',monospace" font-weight="600">MODULE 6</text>
+<text x="705" y="542" fill="#dce7f0" font-size="13" font-weight="600" text-anchor="middle">Overcooling Detector</text>
+<text x="705" y="556" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">EnerviaOvercoolingDetector</text>
+
+<!-- Note band between context and optimizer rows -->
+<rect x="45" y="572" width="790" height="22" rx="4" fill="#10171f" stroke="#252e3a" stroke-width="1"/>
+<text x="440" y="587" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">M5 tariff context &#8594; M7 + M8 &nbsp;|&nbsp; M6 overcooling data &#8594; M7 &nbsp;|&nbsp; both modules feed optimization layer below</text>
+
+<!-- Arrows M5→M7 and M6→M8 -->
+<line x1="175" y1="562" x2="175" y2="597" stroke="#576070" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="705" y1="562" x2="705" y2="597" stroke="#576070" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<!-- ═══════ MODULE 7 (left) ═══════ -->
+<rect x="65" y="600" width="220" height="62" rx="8" fill="#131920" stroke="#29a65e" stroke-width="1.5"/>
+<text x="79" y="622" fill="#29a65e" font-size="10" font-family="'JetBrains Mono',monospace" font-weight="600">MODULE 7</text>
+<text x="175" y="642" fill="#dce7f0" font-size="13" font-weight="600" text-anchor="middle">Cooling Optimizer</text>
+<text x="175" y="656" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">EnerviaCoolingOptimizer</text>
+
+<!-- ═══════ MODULE 8 (right) ═══════ -->
+<rect x="595" y="600" width="220" height="62" rx="8" fill="#131920" stroke="#29a65e" stroke-width="1.5"/>
+<text x="609" y="622" fill="#29a65e" font-size="10" font-family="'JetBrains Mono',monospace" font-weight="600">MODULE 8</text>
+<text x="705" y="642" fill="#dce7f0" font-size="13" font-weight="600" text-anchor="middle">Peak Demand Optimizer</text>
+<text x="705" y="656" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">EnerviaPeakOptimizer</text>
+
+<!-- Merge M7+M8 → M9 -->
+<line x1="175" y1="662" x2="175" y2="710" stroke="#576070" stroke-width="1.5"/>
+<line x1="705" y1="662" x2="705" y2="710" stroke="#576070" stroke-width="1.5"/>
+<line x1="175" y1="710" x2="705" y2="710" stroke="#576070" stroke-width="1.2"/>
+<line x1="440" y1="710" x2="440" y2="737" stroke="#576070" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="458" y="727" fill="#576070" font-size="10" font-family="'JetBrains Mono',monospace">merge &#8595;</text>
+
+<!-- ═══════ MODULE 9 ═══════ -->
+<rect x="330" y="740" width="220" height="62" rx="8" fill="#131920" stroke="#29a65e" stroke-width="1.5"/>
+<text x="344" y="762" fill="#29a65e" font-size="10" font-family="'JetBrains Mono',monospace" font-weight="600">MODULE 9</text>
+<text x="440" y="782" fill="#dce7f0" font-size="14" font-weight="600" text-anchor="middle">Savings Engine</text>
+<text x="440" y="796" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">EnerviaSavingsEngine</text>
+
+<!-- Arrow M9→M10 -->
+<line x1="440" y1="802" x2="440" y2="838" stroke="#576070" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<!-- ═══════ MODULE 10 ═══════ -->
+<rect x="330" y="840" width="220" height="62" rx="8" fill="#131920" stroke="#29a65e" stroke-width="1.5"/>
+<text x="344" y="862" fill="#29a65e" font-size="10" font-family="'JetBrains Mono',monospace" font-weight="600">MODULE 10</text>
+<text x="440" y="882" fill="#dce7f0" font-size="13" font-weight="600" text-anchor="middle">Recommendation Engine</text>
+<text x="440" y="896" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">EnerviaRecommendationEngine</text>
+
+<!-- Arrow M10→M11 -->
+<line x1="440" y1="902" x2="440" y2="958" stroke="#9d72f5" stroke-width="1.5" marker-end="url(#ar-p)"/>
+
+<!-- ═══════ MODULE 11 ═══════ -->
+<rect x="330" y="960" width="220" height="62" rx="8" fill="#100d1e" stroke="#9d72f5" stroke-width="1.5"/>
+<text x="344" y="982" fill="#9d72f5" font-size="10" font-family="'JetBrains Mono',monospace" font-weight="600">MODULE 11 (cross-cutting)</text>
+<text x="440" y="1002" fill="#dce7f0" font-size="14" font-weight="600" text-anchor="middle">Audit Log</text>
+<text x="440" y="1016" fill="#576070" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">EnerviaAuditLog</text>
+
+<!-- M11 receives events label -->
+<text x="440" y="1040" fill="#9d72f5" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace">&#8593; receives: INPUT_RECEIVED | VALIDATION_RESULT | SAFETY_VETO | OPTIMIZATION_COMPUTED | RECOMMENDATION_GENERATED</text>
+
+<!-- ═══════ J-PATH: INVALID → M11 (dashed amber, right edge x=826) ═══════ -->
+<path d="M780 163 L826 163 L826 991 L554 991" fill="none" stroke="#dba63a" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#ar-a)"/>
+
+<!-- ═══════ J-PATH: BLOCKED → M11 (dashed red, right edge x=844) ═══════ -->
+<path d="M780 410 L844 410 L844 991 L554 991" fill="none" stroke="#f05050" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#ar-r)"/>
+
+<!-- Labels for J-paths at right margin -->
+<text x="832" y="286" fill="#dba63a" font-size="10" font-family="'JetBrains Mono',monospace" transform="rotate(90,832,286)">INVALID path &#8594; M11</text>
+<text x="850" y="600" fill="#f05050" font-size="10" font-family="'JetBrains Mono',monospace" transform="rotate(90,850,600)">BLOCKED path &#8594; M11</text>
+
+<!-- ═══════ FINAL OUTPUT BOX ═══════ -->
+<rect x="200" y="1050" width="480" height="34" rx="6" fill="#0d2218" stroke="#29a65e" stroke-width="1"/>
+<text x="440" y="1072" fill="#3dcc75" font-size="10" font-weight="600" text-anchor="middle" font-family="'JetBrains Mono',monospace">&#9654; ADVISORY OUTPUT: "Reduce cooling 7% | 18:00-20:00 | 120 kW | &#8377;1,800 | SAFE"</text>
+
+</svg>
+  </div>
+</div><!-- end flowchart tab -->
+
+
+<!-- ─── TAB 2: PSEUDOCODE ─── -->
+<div id="tab-pseudocode" class="tab-pane">
+  <div class="sec-title">Complete Pipeline Pseudocode</div>
+  <div class="sec-sub">
+    Step-by-step representation of how all 11 modules interact. Each module's inputs, decision logic, and outputs are shown inline. This pseudocode follows Python conventions but is written for readability, not execution.
+  </div>
+
+  <div class="ps-wrap">
+    <div class="ps-topbar">
+      <div class="ps-dot" style="background:#f05050"></div>
+      <div class="ps-dot" style="background:#dba63a"></div>
+      <div class="ps-dot" style="background:#29a65e"></div>
+      <span class="ps-filename">enervia_pipeline.pseudo</span>
+    </div>
+    <div class="ps-body"><span class="cmt">═══════════════════════════════════════════════════════════════════
+  ENERVIA OPTIMIZATION PIPELINE — COMPLETE PSEUDOCODE
+  Phase-1 | Read-Only | Advisory Only | No Control Commands
+═══════════════════════════════════════════════════════════════════</span>
+
+<span class="kw">INPUT :</span>  <span class="nm">raw_payload</span>    <span class="cmt">← JSON or CSV string arriving from EEG-01 edge gateway</span>
+<span class="kw">OUTPUT:</span>  <span class="nm">final_rec</span>      <span class="cmt">← FinalRecommendationRecord (action, window, savings, safety, reason)</span>
+
+<span class="kw">FUNCTION</span> <span class="mod">run_enervia_pipeline</span>(<span class="nm">raw_payload</span>):
+
+
+<span class="sec">── MODULE 1: DATA INGESTION ────────────────────────────────────────</span>
+
+    <span class="nm">record</span> <span class="arrow">←</span> <span class="mod">EnerviaIngestion</span>.<span class="lbl">process_incoming_payload</span>(<span class="nm">raw_payload</span>)
+
+    <span class="cmt">// Auto-detects JSON vs CSV, standardizes timestamp, normalizes all units.
+    //
+    // OUTPUT — IngestedTelemetryRecord:
+    //   timestamp      → datetime   ISO 8601 standardized
+    //   rack_temps     → List[°C]   always wrapped as a list (even single value)
+    //   airflow_proxy  → float      fan speed % or RPM
+    //   chiller_power  → float kW
+    //   facility_power → float kW
+    //   ups_load       → float kW or %
+    //   tariff         → float ₹/kWh
+    //   raw_format     → str        'json' | 'csv'</span>
+
+    <span class="mod">audit</span>.<span class="lbl">log</span>(event=<span class="val">INPUT_RECEIVED</span>, source=<span class="str">"enervia_ingestion"</span>, data=<span class="nm">record</span>)
+
+
+<span class="sec">── MODULE 2: DATA VALIDATION ───────────────────────────────────────</span>
+
+    <span class="nm">validated</span> <span class="arrow">←</span> <span class="mod">EnerviaValidation</span>(<span class="nm">previous_record</span>=<span class="nm">last_record</span>).<span class="lbl">validate_record</span>(<span class="nm">record</span>)
+
+    <span class="cmt">// Range checks:   max(rack_temps) ≤ 45°C   |   all power values ≥ 0
+    // Stale check:    timestamp present + power values not frozen from last reading
+    // Spike check:    |Δfacility_power| ≤ 500 kW vs previous sample
+    //
+    // OUTPUT — ValidatedTelemetryRecord:
+    //   data             → IngestedTelemetryRecord  (original data, unchanged)
+    //   is_valid         → bool                     KEY GATE SIGNAL
+    //   validation_flags → List[str]                e.g. "CRITICAL_TEMP_EXCEEDED"
+    //   reason_codes     → List[str]                human-readable details</span>
+
+    <span class="mod">audit</span>.<span class="lbl">log</span>(event=<span class="val">VALIDATION_RESULT</span>, data=<span class="nm">validated</span>)
+
+    <span class="kw">IF</span> <span class="nm">validated</span>.is_valid <span class="kw">== FALSE</span>:
+        <span class="blk">RETURN</span> <span class="str">"PIPELINE HALTED — invalid telemetry. No recommendation generated."</span>
+
+
+<span class="sec">── MODULE 3: STATE STORE ───────────────────────────────────────────</span>
+
+    <span class="nm">state</span> <span class="arrow">←</span> <span class="mod">EnerviaStateStore</span>.<span class="lbl">update_state</span>(<span class="nm">validated</span>)
+
+    <span class="cmt">// Maintains 3 rolling buffers:
+    //   buffer_15m  → deque(maxlen=15)    ~15-minute window at 1-min sampling
+    //   buffer_1h   → deque(maxlen=60)    ~1-hour window
+    //   buffer_24h  → deque(maxlen=1440)  ~24-hour window
+    //
+    // Derived metrics computed from buffers:
+    //   delta_t_trend       = (T_now − T_earliest) / elapsed_minutes
+    //   avg_rack_temp_15m   = mean(rack_temps) across buffer_15m
+    //   avg_facility_power_1h = mean(facility_power) across buffer_1h
+    //   is_stable           = (delta_t_trend < 0.5°C/min)
+    //   last_safe_data      = last record where is_valid was True
+    //
+    // OUTPUT — SystemStateRecord:
+    //   current_data          → ValidatedTelemetryRecord
+    //   last_safe_data        → IngestedTelemetryRecord | None
+    //   delta_t_trend         → float  (°C/min)
+    //   avg_rack_temp_15m     → float  (°C)
+    //   avg_facility_power_1h → float  (kW)
+    //   is_stable             → bool
+    //   window_15m_count      → int    (how many points are in buffer)</span>
+
+
+<span class="sec">── MODULE 4: SAFETY ENGINE — GLOBAL GATEKEEPER ─────────────────────</span>
+
+    <span class="nm">safety</span> <span class="arrow">←</span> <span class="mod">EnerviaSafetyEngine</span>.<span class="lbl">evaluate_safety</span>(<span class="nm">state</span>)
+
+    <span class="cmt">// ALL four conditions must pass to return SAFE:
+    //
+    //   CHECK 1 → validated.is_valid == True         → else: INVALID_DATA_STREAM
+    //   CHECK 2 → max(rack_temps) < 45.0°C           → else: THERMAL_LIMIT_EXCEEDED
+    //   CHECK 3 → delta_t_trend   < 0.5°C/min        → else: RAPID_TEMP_RISE
+    //   CHECK 4 → window_15m_count ≥ 5 data points   → else: INSUFFICIENT_HISTORY
+    //
+    // OUTPUT — SafetyStatusRecord:
+    //   status       → SafetyStatus   "SAFE" | "BLOCKED"
+    //   reason_codes → List[str]      which checks failed
+    //   description  → str            full human-readable explanation</span>
+
+    <span class="kw">IF</span> <span class="nm">safety</span>.status <span class="kw">==</span> <span class="blk">BLOCKED</span>:
+        <span class="mod">audit</span>.<span class="lbl">log</span>(event=<span class="val">SAFETY_VETO</span>, status=<span class="val">BLOCKED</span>, data=<span class="nm">safety</span>)
+        <span class="blk">RETURN</span> FinalRecommendationRecord(
+            action  = <span class="str">"Maintain current settings (No Action)"</span>,
+            window  = <span class="nm">current_time_window</span>,
+            savings = <span class="str">"0 kW | ₹0"</span>,
+            safety  = <span class="blk">"BLOCKED"</span>,
+            reason  = <span class="str">"Safety Veto: "</span> + <span class="nm">safety</span>.reason_codes
+        )
+
+<span class="safe">    ✓ SAFETY CLEARED — OPTIMIZATION MAY PROCEED ✓</span>
+
+
+<span class="sec">── MODULE 5: TARIFF & TIME CONTEXT ────────────────────────────────</span>
+
+    <span class="nm">cost</span> <span class="arrow">←</span> <span class="mod">EnerviaCostContext</span>.<span class="lbl">evaluate_cost_context</span>(
+        current_time   = <span class="nm">state</span>.current_data.data.timestamp,
+        current_tariff = <span class="nm">state</span>.current_data.data.tariff
+    )
+
+    <span class="cmt">// Time-of-Use (ToU) classification (configurable windows):
+    //   PEAK:     10:00–14:00 and 18:00–22:00
+    //   OFF-PEAK: 00:00–06:00
+    //   NORMAL:   all other hours
+    //   Override: IF tariff ≥ 1.8 × base_tariff(6.0) → always classify as PEAK
+    //
+    // Cost severity index (1–10):
+    //   Base:  OFF-PEAK → 1  |  NORMAL → 5  |  PEAK → 8
+    //   +2 if tariff > 2.0 × base  |  +1 if tariff > 1.2 × base  (capped at 10)
+    //
+    // OUTPUT — CostContextRecord:
+    //   timestamp           → datetime
+    //   current_tariff      → float (₹/kWh)
+    //   tariff_status       → TariffStatus  "PEAK" | "NORMAL" | "OFF-PEAK"
+    //   cost_severity_index → int (1–10)  ← injected into M7 and M8</span>
+
+
+<span class="sec">── MODULE 6: OVERCOOLING DETECTION ────────────────────────────────</span>
+
+    <span class="nm">thermal</span> <span class="arrow">←</span> ThermalMetrics(
+        rack_inlet_temps  = <span class="nm">state</span>.current_data.data.rack_temps,
+        rack_outlet_temps = <span class="nm">state</span>.outlet_temps,
+        supply_air_temp   = <span class="nm">state</span>.supply_temp,
+        return_air_temp   = <span class="nm">state</span>.return_temp
+    )
+    <span class="nm">overcooling</span> <span class="arrow">←</span> <span class="mod">EnerviaOvercoolingDetector</span>.<span class="lbl">evaluate_overcooling</span>(<span class="nm">thermal</span>)
+
+    <span class="cmt">// Calculations:
+    //   mean_delta_t     = mean(outlet_temps) − mean(inlet_temps)
+    //   thermal_headroom = 27.0°C − max(inlet_temps)     [target, not hard limit]
+    //
+    // Overcooling score (0.0 = efficient → 1.0 = highly wasteful):
+    //   temp_factor  = max(0, (27 − max_inlet) / 10)         [weight: 70%]
+    //   delta_factor = max(0, (5 − delta_t) / 5) if delta<5  [weight: 30%]
+    //   score = min(1.0,  0.7 × temp_factor + 0.3 × delta_factor)
+    //
+    // Feasibility hint: True IF (headroom > 2.0°C) AND (mean_delta_t > 2.0°C)
+    //
+    // OUTPUT — OvercoolingAssessmentRecord:
+    //   overcooling_score          → float (0.0 – 1.0)
+    //   reduction_feasibility_hint → bool   ← used by M7 as gate
+    //   mean_delta_t               → float (°C)
+    //   thermal_headroom           → float (°C)</span>
+
+
+<span class="sec">── MODULE 7: COOLING OPTIMIZER ────────────────────────────────────</span>
+
+    <span class="nm">cooling_rec</span> <span class="arrow">←</span> <span class="mod">EnerviaCoolingOptimizer</span>.<span class="lbl">generate_cooling_recommendation</span>(
+        safety        = <span class="nm">safety</span>,
+        overcooling   = <span class="nm">overcooling</span>,
+        current_power = <span class="nm">state</span>.current_data.data.chiller_power,
+        cost          = <span class="nm">cost</span>
+    )
+
+    <span class="cmt">// Decision tree:
+    //   IF safety.BLOCKED              → reduction = 0%, safety_status = "BLOCKED"
+    //   IF NOT feasibility_hint        → reduction = 0%, safety_status = "SAFE" (no waste found)
+    //   ELSE:
+    //     base_reduction    = overcooling_score × 10.0        → [0.0 – 10.0 %]
+    //     economic_weight   = cost_severity_index / 10.0      → [0.1 – 1.0]
+    //     final_pct         = min(base × weight,  15.0)       → hard cap at 15%
+    //
+    // OUTPUT — CoolingRecommendationRecord:
+    //   recommended_reduction_percentage → float  (% of chiller load to reduce)
+    //   time_window                      → str    "HH:MM–HH:MM"
+    //   safety_status                    → str    "SAFE" | "BLOCKED"
+    //   explanation                      → str    rationale for the decision</span>
+
+
+<span class="sec">── MODULE 8: PEAK DEMAND OPTIMIZER ────────────────────────────────</span>
+
+    <span class="nm">peak_rec</span> <span class="arrow">←</span> <span class="mod">EnerviaPeakOptimizer</span>.<span class="lbl">evaluate_peak_demand</span>(
+        facility_power = <span class="nm">state</span>.current_data.data.facility_power,
+        ups_load       = <span class="nm">state</span>.current_data.data.ups_load,
+        cost_context   = <span class="nm">cost</span>
+    )
+
+    <span class="cmt">// UPS safety gate: IF ups_load > 85% → NONE_SAFETY_LOCKOUT (block mitigation)
+    //
+    // Activation condition (either triggers):
+    //   CONDITION A: cost.tariff_status == PEAK
+    //   CONDITION B: facility_power > FACILITY_PEAK_LIMIT × 0.9
+    //
+    // Strategy selection:
+    //   IF cost_severity_index ≥ 8 → "AGGRESSIVE_LOAD_REDUCTION"
+    //   ELSE                       → "MODERATE_PEAK_SHAVE"
+    //   target_kw = facility_power × 0.05   (5% of live facility power)
+    //
+    // OUTPUT — PeakMitigationRecord:
+    //   is_mitigation_active    → bool
+    //   mitigation_strategy     → str    "AGGRESSIVE_LOAD_REDUCTION" | "MODERATE_PEAK_SHAVE"
+    //                                    | "STANDARD_OPERATIONS" | "NONE_SAFETY_LOCKOUT"
+    //   peak_shaving_target_kw  → float  (kW)
+    //   ups_safety_buffer       → float  (% remaining UPS capacity)
+    //   urgency_score           → int    (1–10)</span>
+
+
+<span class="sec">── MODULE 9: SAVINGS ESTIMATION ───────────────────────────────────</span>
+
+    <span class="nm">savings</span> <span class="arrow">←</span> <span class="mod">EnerviaSavingsEngine</span>.<span class="lbl">compute_savings</span>(
+        baseline_power  = <span class="nm">state</span>.current_data.data.chiller_power,
+        reduced_power   = baseline × (<span class="num">1</span> − <span class="nm">cooling_rec</span>.recommended_reduction_percentage / <span class="num">100</span>),
+        tariff          = <span class="nm">state</span>.current_data.data.tariff,
+        duration_hours  = <span class="num">2.0</span>   <span class="cmt">← default 2-hour optimization window</span>
+    )
+
+    <span class="cmt">// Formula:
+    //   kw_saved          = max(0,  baseline_power − reduced_power)
+    //   energy_saved_kwh  = kw_saved × duration_hours
+    //   rupees_saved      = energy_saved_kwh × tariff
+    //
+    // State tracking (cumulative):
+    //   cumulative_kw_saved      += kw_saved
+    //   cumulative_rupees_saved  += rupees_saved
+    //
+    // OUTPUT — SavingsEstimationRecord:
+    //   kw_saved                   → float   instantaneous reduction
+    //   energy_saved_kwh           → float   over duration window
+    //   rupees_saved_per_interval  → float   ₹ for this recommendation window
+    //   timestamp                  → datetime</span>
+
+
+<span class="sec">── MODULE 10: RECOMMENDATION ENGINE ───────────────────────────────</span>
+
+    <span class="cmt">// Build context_reasons for explainability</span>
+    <span class="nm">reasons</span> <span class="arrow">←</span> []
+    <span class="kw">IF</span> <span class="nm">overcooling</span>.overcooling_score > <span class="num">0.3</span>    : <span class="nm">reasons</span>.append(<span class="str">"Overcooling detected"</span>)
+    <span class="kw">IF</span> <span class="nm">cost</span>.tariff_status <span class="kw">==</span> <span class="val">PEAK</span>             : <span class="nm">reasons</span>.append(<span class="str">"Peak tariff window"</span>)
+    <span class="kw">IF</span> <span class="nm">peak_rec</span>.is_mitigation_active            : <span class="nm">reasons</span>.append(<span class="str">"Peak demand mitigation active"</span>)
+
+    <span class="nm">final_rec</span> <span class="arrow">←</span> <span class="mod">EnerviaRecommendationEngine</span>.<span class="lbl">generate_final_recommendation</span>(
+        recommendation  = <span class="nm">cooling_rec</span>,
+        savings         = <span class="nm">savings</span>,
+        safety_status   = <span class="nm">safety</span>,
+        context_reasons = <span class="nm">reasons</span>
+    )
+
+    <span class="cmt">// Decision:
+    //   IF safety BLOCKED       → action = "Maintain current settings"  savings = "0 kW | ₹0"
+    //   IF reduction_pct ≤ 0    → action = "System at peak efficiency"   savings = "0 kW | ₹0"
+    //   ELSE                    → action = "Reduce cooling by X%"
+    //
+    // OUTPUT — FinalRecommendationRecord:
+    //   action  → str   "Reduce cooling by 7%"
+    //   window  → str   "18:00–20:00"
+    //   savings → str   "120 kW | ₹1,800"
+    //   safety  → str   "SAFE" | "BLOCKED"
+    //   reason  → str   "Overcooling detected + Peak tariff window"</span>
+
+
+<span class="sec">── MODULE 11: AUDIT LOG (runs throughout entire pipeline) ──────────</span>
+
+    <span class="mod">audit</span>.<span class="lbl">log_event</span>(
+        event_type    = <span class="val">RECOMMENDATION_GENERATED</span>,
+        data_record   = <span class="nm">final_rec</span>,
+        module_source = <span class="str">"enervia_recommendation_engine"</span>,
+        status        = <span class="safe">SUCCESS</span>
+    )
+
+    <span class="cmt">// AuditLogEntry structure (JSON output):
+    // {
+    //   "timestamp"    : "2024-01-15T18:00:00Z",
+    //   "event_type"   : "RECOMMENDATION_GENERATED",
+    //   "status"       : "SUCCESS",
+    //   "payload"      : { ...serialized final_rec... },
+    //   "module_source": "enervia_recommendation_engine"
+    // }</span>
+
+    <span class="kw">RETURN</span> <span class="nm">final_rec</span>
+
+<span class="out">
+═══════════════════════════════════════════════════════════════════
+  EXAMPLE OUTPUT
+═══════════════════════════════════════════════════════════════════
+  action  : "Reduce cooling by 7%"
+  window  : "18:00–20:00"
+  savings : "120 kW | ₹1,800"
+  safety  : "SAFE"
+  reason  : "Overcooling detected + Peak tariff window"
+═══════════════════════════════════════════════════════════════════</span>
+
+<span class="kw">END FUNCTION</span>
+</div>
+  </div>
+</div><!-- end pseudocode tab -->
+
+
+<!-- ─── TAB 3: MODULE REFERENCE ─── -->
+<div id="tab-modules" class="tab-pane">
+  <div class="sec-title">Module Reference — Variables & Descriptions</div>
+  <div class="sec-sub">
+    Each module is self-contained and communicates through strongly-typed dataclass records. Inputs, outputs, and key constants are listed for every module. Color coding matches the pipeline flowchart.
+  </div>
+
+  <div class="mod-grid">
+
+    <!-- ── M1 ── -->
+    <div class="mod-card">
+      <div class="mc-head">
+        <div class="mc-num" style="background:#0d2218;border:1px solid var(--green);color:var(--green);">M1</div>
+        <div class="mc-info">
+          <div class="mc-name">Data Ingestion Service</div>
+          <div class="mc-cls">class EnerviaIngestion &nbsp;|&nbsp; enervia_ingestion</div>
+        </div>
+        <div class="mc-desc">Receives raw JSON or CSV streams from the edge gateway, auto-detects format, parses timestamps, normalizes all units, and emits a clean, typed telemetry record.</div>
+      </div>
+      <div class="mc-body">
+        <div>
+          <div class="mc-sect">Inputs</div>
+          <table class="vt">
+            <tr><td class="v-name">payload</td><td class="v-type">str</td><td class="v-desc">Raw JSON or CSV string from EEG-01</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Constants / Config</div>
+          <table class="vt">
+            <tr><td class="v-name">—</td><td class="v-type">—</td><td class="v-desc">Stateless. No thresholds. Pure parsing.</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Output — IngestedTelemetryRecord</div>
+          <table class="vt">
+            <tr><td class="v-name">timestamp</td><td class="v-type">datetime</td><td class="v-desc">ISO 8601 standardized</td></tr>
+            <tr><td class="v-name">rack_temps</td><td class="v-type">List[float]</td><td class="v-desc">Rack inlet temps in °C (always a list)</td></tr>
+            <tr><td class="v-name">airflow_proxy</td><td class="v-type">float</td><td class="v-desc">Fan speed % or RPM</td></tr>
+            <tr><td class="v-name">chiller_power</td><td class="v-type">float</td><td class="v-desc">Chiller load in kW</td></tr>
+            <tr><td class="v-name">facility_power</td><td class="v-type">float</td><td class="v-desc">Total facility load in kW</td></tr>
+            <tr><td class="v-name">ups_load</td><td class="v-type">float</td><td class="v-desc">UPS load in kW or %</td></tr>
+            <tr><td class="v-name">tariff</td><td class="v-type">float</td><td class="v-desc">Current electricity cost ₹/kWh</td></tr>
+            <tr><td class="v-name">raw_format</td><td class="v-type">str</td><td class="v-desc">'json' or 'csv' (source metadata)</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── M2 ── -->
+    <div class="mod-card">
+      <div class="mc-head">
+        <div class="mc-num" style="background:#0d2218;border:1px solid var(--green);color:var(--green);">M2</div>
+        <div class="mc-info">
+          <div class="mc-name">Data Validation &amp; Sanity Checker</div>
+          <div class="mc-cls">class EnerviaValidation &nbsp;|&nbsp; enervia_validation</div>
+        </div>
+        <div class="mc-desc">Enforces physical constraints — catches impossible temperature values, negative power readings, stale sensor data, and sudden anomalous spikes before any optimization logic sees the data.</div>
+      </div>
+      <div class="mc-body">
+        <div>
+          <div class="mc-sect">Inputs</div>
+          <table class="vt">
+            <tr><td class="v-name">record</td><td class="v-type">Ingested TelemetryRecord</td><td class="v-desc">Output from M1</td></tr>
+            <tr><td class="v-name">previous_record</td><td class="v-type">Optional</td><td class="v-desc">Last record, for stale/spike checks</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Key Thresholds</div>
+          <table class="vt">
+            <tr><td class="v-name">MAX_RACK_INLET_TEMP</td><td class="v-type">float</td><td class="v-desc"><span class="chip chip-r">45.0 °C</span> hard limit</td></tr>
+            <tr><td class="v-name">SPIKE_THRESHOLD_POWER</td><td class="v-type">float</td><td class="v-desc"><span class="chip chip-a">500 kW</span> max jump per sample</td></tr>
+          </table>
+          <br>
+          <div class="mc-sect">Validation Flags</div>
+          <table class="vt">
+            <tr><td class="v-name">CRITICAL_TEMP_EXCEEDED</td><td class="v-type">—</td><td class="v-desc">Any rack temp &gt; 45°C</td></tr>
+            <tr><td class="v-name">NEGATIVE_POWER_*</td><td class="v-type">—</td><td class="v-desc">chiller / facility / ups below zero</td></tr>
+            <tr><td class="v-name">MISSING_TIMESTAMP</td><td class="v-type">—</td><td class="v-desc">No timestamp present</td></tr>
+            <tr><td class="v-name">STALE_DATA_WARNING</td><td class="v-type">—</td><td class="v-desc">Power readings frozen from last sample</td></tr>
+            <tr><td class="v-name">UNREALISTIC_SPIKE_DETECTED</td><td class="v-type">—</td><td class="v-desc">Δfacility_power &gt; 500 kW</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Output — ValidatedTelemetryRecord</div>
+          <table class="vt">
+            <tr><td class="v-name">data</td><td class="v-type">Ingested TelemetryRecord</td><td class="v-desc">Original M1 record (unchanged)</td></tr>
+            <tr><td class="v-name">is_valid</td><td class="v-type">bool</td><td class="v-desc"><strong>KEY GATE:</strong> False halts pipeline</td></tr>
+            <tr><td class="v-name">validation_flags</td><td class="v-type">List[str]</td><td class="v-desc">All triggered flag names</td></tr>
+            <tr><td class="v-name">reason_codes</td><td class="v-type">List[str]</td><td class="v-desc">Human-readable details per flag</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── M3 ── -->
+    <div class="mod-card">
+      <div class="mc-head">
+        <div class="mc-num" style="background:#0d2218;border:1px solid var(--green);color:var(--green);">M3</div>
+        <div class="mc-info">
+          <div class="mc-name">Time-Series State Manager</div>
+          <div class="mc-cls">class EnerviaStateStore &nbsp;|&nbsp; enervia_state_store</div>
+        </div>
+        <div class="mc-desc">Maintains rolling time-series buffers across three window sizes and computes trend metrics that downstream safety and optimization modules depend on for context-aware decisions.</div>
+      </div>
+      <div class="mc-body">
+        <div>
+          <div class="mc-sect">Inputs</div>
+          <table class="vt">
+            <tr><td class="v-name">record</td><td class="v-type">Validated TelemetryRecord</td><td class="v-desc">Output from M2</td></tr>
+          </table>
+          <br>
+          <div class="mc-sect">Internal Buffers</div>
+          <table class="vt">
+            <tr><td class="v-name">buffer_15m</td><td class="v-type">deque(maxlen=15)</td><td class="v-desc">~15-minute window</td></tr>
+            <tr><td class="v-name">buffer_1h</td><td class="v-type">deque(maxlen=60)</td><td class="v-desc">~1-hour window</td></tr>
+            <tr><td class="v-name">buffer_24h</td><td class="v-type">deque(maxlen=1440)</td><td class="v-desc">~24-hour window</td></tr>
+            <tr><td class="v-name">last_known_safe_state</td><td class="v-type">Optional</td><td class="v-desc">Last record with is_valid=True</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Stability Threshold</div>
+          <table class="vt">
+            <tr><td class="v-name">is_stable</td><td class="v-type">bool</td><td class="v-desc">True if delta_t_trend &lt; <span class="chip chip-a">0.5 °C/min</span></td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Output — SystemStateRecord</div>
+          <table class="vt">
+            <tr><td class="v-name">current_data</td><td class="v-type">Validated TelemetryRecord</td><td class="v-desc">Latest validated reading</td></tr>
+            <tr><td class="v-name">last_safe_data</td><td class="v-type">Optional[Ingested TelemetryRecord]</td><td class="v-desc">Last known safe snapshot</td></tr>
+            <tr><td class="v-name">delta_t_trend</td><td class="v-type">float °C/min</td><td class="v-desc">Rate of rack temp change</td></tr>
+            <tr><td class="v-name">avg_rack_temp_15m</td><td class="v-type">float °C</td><td class="v-desc">15-min moving average temp</td></tr>
+            <tr><td class="v-name">avg_facility_power_1h</td><td class="v-type">float kW</td><td class="v-desc">1-hr moving average power</td></tr>
+            <tr><td class="v-name">is_stable</td><td class="v-type">bool</td><td class="v-desc">Thermal stability flag</td></tr>
+            <tr><td class="v-name">window_15m_count</td><td class="v-type">int</td><td class="v-desc">Points in active 15-min buffer</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── M4 GATEKEEPER ── -->
+    <div class="mod-card gk">
+      <div class="mc-head">
+        <div class="mc-num" style="background:var(--red-dim);border:1px solid var(--red);color:var(--red);">M4</div>
+        <div class="mc-info">
+          <div class="mc-name" style="color:var(--red);">Safety Engine — Global Gatekeeper &#9888;</div>
+          <div class="mc-cls">class EnerviaSafetyEngine &nbsp;|&nbsp; enervia_safety_engine</div>
+        </div>
+        <div class="mc-desc" style="color:var(--red);">The system-wide veto authority. No optimization module can proceed without SAFE approval from this engine. It cannot be bypassed, overridden, or disabled. This is non-negotiable IP.</div>
+      </div>
+      <div class="mc-body">
+        <div>
+          <div class="mc-sect">Inputs</div>
+          <table class="vt">
+            <tr><td class="v-name">state</td><td class="v-type">SystemStateRecord</td><td class="v-desc">Output from M3</td></tr>
+          </table>
+          <br>
+          <div class="mc-sect">Hard Constraints</div>
+          <table class="vt">
+            <tr><td class="v-name">TEMP_LIMIT_MAX</td><td class="v-type">float</td><td class="v-desc"><span class="chip chip-r">45.0 °C</span> absolute ceiling</td></tr>
+            <tr><td class="v-name">MAX_ALLOWED_TREND</td><td class="v-type">float</td><td class="v-desc"><span class="chip chip-r">0.5 °C/min</span> max rise rate</td></tr>
+            <tr><td class="v-name">MIN_REQUIRED_HISTORY</td><td class="v-type">int</td><td class="v-desc"><span class="chip chip-a">5 points</span> min buffer before decisions</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Safety Checks (all must pass)</div>
+          <table class="vt">
+            <tr><td class="v-name">CHECK 1</td><td class="v-type">—</td><td class="v-desc">validated.is_valid == True → else: INVALID_DATA_STREAM</td></tr>
+            <tr><td class="v-name">CHECK 2</td><td class="v-type">—</td><td class="v-desc">max(rack_temps) &lt; 45°C → else: THERMAL_LIMIT_EXCEEDED</td></tr>
+            <tr><td class="v-name">CHECK 3</td><td class="v-type">—</td><td class="v-desc">delta_t_trend &lt; 0.5°C/min → else: RAPID_TEMP_RISE</td></tr>
+            <tr><td class="v-name">CHECK 4</td><td class="v-type">—</td><td class="v-desc">window_15m_count ≥ 5 → else: INSUFFICIENT_HISTORY</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Output — SafetyStatusRecord</div>
+          <table class="vt">
+            <tr><td class="v-name">status</td><td class="v-type">SafetyStatus</td><td class="v-desc"><span class="chip chip-g">SAFE</span> or <span class="chip chip-r">BLOCKED</span></td></tr>
+            <tr><td class="v-name">reason_codes</td><td class="v-type">List[str]</td><td class="v-desc">Which checks failed (empty if SAFE)</td></tr>
+            <tr><td class="v-name">description</td><td class="v-type">str</td><td class="v-desc">Full human-readable explanation</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── M5 ── -->
+    <div class="mod-card blue-card">
+      <div class="mc-head">
+        <div class="mc-num" style="background:var(--blue-dim);border:1px solid var(--blue);color:var(--blue);">M5</div>
+        <div class="mc-info">
+          <div class="mc-name">Tariff &amp; Time Context Engine</div>
+          <div class="mc-cls">class EnerviaCostContext &nbsp;|&nbsp; enervia_cost_context</div>
+        </div>
+        <div class="mc-desc">Translates the raw electricity price and current time into an economic priority index. Tells both M7 and M8 how aggressively to optimize — "energy saved" and "money saved" are different things.</div>
+      </div>
+      <div class="mc-body">
+        <div>
+          <div class="mc-sect">Inputs</div>
+          <table class="vt">
+            <tr><td class="v-name">current_time</td><td class="v-type">datetime</td><td class="v-desc">From state record timestamp</td></tr>
+            <tr><td class="v-name">current_tariff</td><td class="v-type">float ₹/kWh</td><td class="v-desc">Live electricity price</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Configuration</div>
+          <table class="vt">
+            <tr><td class="v-name">base_tariff</td><td class="v-type">float</td><td class="v-desc"><span class="chip chip-b">₹6.0/kWh</span> baseline reference</td></tr>
+            <tr><td class="v-name">peak_windows</td><td class="v-type">List[tuple]</td><td class="v-desc">10:00–14:00, 18:00–22:00</td></tr>
+            <tr><td class="v-name">off_peak_windows</td><td class="v-type">List[tuple]</td><td class="v-desc">00:00–06:00</td></tr>
+            <tr><td class="v-name">severity scale</td><td class="v-type">int 1–10</td><td class="v-desc">OFF-PEAK→1 | NORMAL→5 | PEAK→8 (+ price modifier)</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Output — CostContextRecord</div>
+          <table class="vt">
+            <tr><td class="v-name">timestamp</td><td class="v-type">datetime</td><td class="v-desc">Current time</td></tr>
+            <tr><td class="v-name">current_tariff</td><td class="v-type">float</td><td class="v-desc">₹/kWh as provided</td></tr>
+            <tr><td class="v-name">tariff_status</td><td class="v-type">TariffStatus</td><td class="v-desc"><span class="chip chip-r">PEAK</span> <span class="chip chip-b">NORMAL</span> <span class="chip chip-g">OFF-PEAK</span></td></tr>
+            <tr><td class="v-name">cost_severity_index</td><td class="v-type">int 1–10</td><td class="v-desc">Economic urgency scale</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── M6 ── -->
+    <div class="mod-card blue-card">
+      <div class="mc-head">
+        <div class="mc-num" style="background:var(--blue-dim);border:1px solid var(--blue);color:var(--blue);">M6</div>
+        <div class="mc-info">
+          <div class="mc-name">Overcooling Detection Engine</div>
+          <div class="mc-cls">class EnerviaOvercoolingDetector &nbsp;|&nbsp; enervia_overcooling_detector</div>
+        </div>
+        <div class="mc-desc">Detects and quantifies cooling waste by analyzing temperature differentials across racks. Determines whether the system is provisioning more cooling than the heat load demands, and signals whether a safe reduction is feasible.</div>
+      </div>
+      <div class="mc-body">
+        <div>
+          <div class="mc-sect">Inputs — ThermalMetrics</div>
+          <table class="vt">
+            <tr><td class="v-name">rack_inlet_temps</td><td class="v-type">List[float] °C</td><td class="v-desc">Inlet temperatures per rack</td></tr>
+            <tr><td class="v-name">rack_outlet_temps</td><td class="v-type">List[float] °C</td><td class="v-desc">Outlet temperatures per rack</td></tr>
+            <tr><td class="v-name">supply_air_temp</td><td class="v-type">float °C</td><td class="v-desc">Cold aisle supply temperature</td></tr>
+            <tr><td class="v-name">return_air_temp</td><td class="v-type">float °C</td><td class="v-desc">Hot aisle return temperature</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Key Thresholds &amp; Formula</div>
+          <table class="vt">
+            <tr><td class="v-name">TARGET_INLET_MAX</td><td class="v-type">float</td><td class="v-desc"><span class="chip chip-a">27.0 °C</span> optimization target (not hard limit)</td></tr>
+            <tr><td class="v-name">MIN_SAFE_DELTA_T</td><td class="v-type">float</td><td class="v-desc"><span class="chip chip-a">5.0 °C</span> below = likely airflow waste</td></tr>
+            <tr><td class="v-name">score formula</td><td class="v-type">—</td><td class="v-desc">0.7 × temp_factor + 0.3 × delta_factor</td></tr>
+            <tr><td class="v-name">feasibility gate</td><td class="v-type">bool</td><td class="v-desc">headroom &gt; 2°C AND delta_t &gt; 2°C</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Output — OvercoolingAssessmentRecord</div>
+          <table class="vt">
+            <tr><td class="v-name">overcooling_score</td><td class="v-type">float 0.0–1.0</td><td class="v-desc">0=efficient, 1=highly wasteful</td></tr>
+            <tr><td class="v-name">reduction_feasibility_hint</td><td class="v-type">bool</td><td class="v-desc"><strong>KEY INPUT to M7</strong> — safe to reduce?</td></tr>
+            <tr><td class="v-name">mean_delta_t</td><td class="v-type">float °C</td><td class="v-desc">Avg temp rise across racks</td></tr>
+            <tr><td class="v-name">thermal_headroom</td><td class="v-type">float °C</td><td class="v-desc">Gap between max inlet and 27°C target</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── M7 ── -->
+    <div class="mod-card">
+      <div class="mc-head">
+        <div class="mc-num" style="background:#0d2218;border:1px solid var(--green);color:var(--green);">M7</div>
+        <div class="mc-info">
+          <div class="mc-name">Cooling Optimization Engine</div>
+          <div class="mc-cls">class EnerviaCoolingOptimizer &nbsp;|&nbsp; enervia_cooling_optimizer</div>
+        </div>
+        <div class="mc-desc">The core decision engine for cooling reduction. Integrates safety approval, overcooling evidence, and economic context to compute the exact percentage reduction that is both safe and cost-effective.</div>
+      </div>
+      <div class="mc-body">
+        <div>
+          <div class="mc-sect">Inputs</div>
+          <table class="vt">
+            <tr><td class="v-name">safety</td><td class="v-type">Safety StatusRecord</td><td class="v-desc">From M4 — MUST be SAFE</td></tr>
+            <tr><td class="v-name">overcooling</td><td class="v-type">Overcooling AssessmentRecord</td><td class="v-desc">From M6</td></tr>
+            <tr><td class="v-name">current_power</td><td class="v-type">float kW</td><td class="v-desc">Live chiller power (from state)</td></tr>
+            <tr><td class="v-name">cost</td><td class="v-type">CostContextRecord</td><td class="v-desc">From M5 (tariff + severity)</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Constants &amp; Formula</div>
+          <table class="vt">
+            <tr><td class="v-name">MAX_REDUCTION_CAP</td><td class="v-type">float</td><td class="v-desc"><span class="chip chip-r">15.0%</span> hard cap per step</td></tr>
+            <tr><td class="v-name">BASE_WINDOW_HOURS</td><td class="v-type">int</td><td class="v-desc"><span class="chip chip-b">2 hours</span> default window</td></tr>
+            <tr><td class="v-name">base_reduction</td><td class="v-type">formula</td><td class="v-desc">overcooling_score × 10  → 0–10%</td></tr>
+            <tr><td class="v-name">economic_weight</td><td class="v-type">formula</td><td class="v-desc">cost_severity_index / 10  → 0.1–1.0</td></tr>
+            <tr><td class="v-name">final_pct</td><td class="v-type">formula</td><td class="v-desc">min(base × weight, 15.0)</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Output — CoolingRecommendationRecord</div>
+          <table class="vt">
+            <tr><td class="v-name">recommended_reduction_percentage</td><td class="v-type">float %</td><td class="v-desc">% of chiller load to reduce</td></tr>
+            <tr><td class="v-name">time_window</td><td class="v-type">str</td><td class="v-desc">"HH:MM–HH:MM" recommendation window</td></tr>
+            <tr><td class="v-name">safety_status</td><td class="v-type">str</td><td class="v-desc">"SAFE" | "BLOCKED"</td></tr>
+            <tr><td class="v-name">explanation</td><td class="v-type">str</td><td class="v-desc">Human-readable decision rationale</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── M8 ── -->
+    <div class="mod-card">
+      <div class="mc-head">
+        <div class="mc-num" style="background:#0d2218;border:1px solid var(--green);color:var(--green);">M8</div>
+        <div class="mc-info">
+          <div class="mc-name">Peak Demand Optimization Engine</div>
+          <div class="mc-cls">class EnerviaPeakOptimizer &nbsp;|&nbsp; enervia_peak_optimizer</div>
+        </div>
+        <div class="mc-desc">Hyper-focused on reducing demand charges during high-cost windows. Coordinates with UPS safety margins (read-only) to ensure peak shaving recommendations do not push backup systems past critical thresholds.</div>
+      </div>
+      <div class="mc-body">
+        <div>
+          <div class="mc-sect">Inputs</div>
+          <table class="vt">
+            <tr><td class="v-name">facility_power</td><td class="v-type">float kW</td><td class="v-desc">Total facility load (from state)</td></tr>
+            <tr><td class="v-name">ups_load</td><td class="v-type">float %</td><td class="v-desc">UPS load percentage (from state)</td></tr>
+            <tr><td class="v-name">cost_context</td><td class="v-type">CostContextRecord</td><td class="v-desc">From M5 (tariff + severity)</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Constants &amp; Logic</div>
+          <table class="vt">
+            <tr><td class="v-name">FACILITY_PEAK_LIMIT</td><td class="v-type">float kW</td><td class="v-desc"><span class="chip chip-b">1000 kW</span> configurable per site</td></tr>
+            <tr><td class="v-name">UPS_CRITICAL_LOAD_THRESHOLD</td><td class="v-type">float %</td><td class="v-desc"><span class="chip chip-r">85%</span> → lockout if exceeded</td></tr>
+            <tr><td class="v-name">activation condition</td><td class="v-type">—</td><td class="v-desc">PEAK window OR &gt;90% of peak limit</td></tr>
+            <tr><td class="v-name">target_kw formula</td><td class="v-type">—</td><td class="v-desc">facility_power × 0.05 (5% reduction target)</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Output — PeakMitigationRecord</div>
+          <table class="vt">
+            <tr><td class="v-name">is_mitigation_active</td><td class="v-type">bool</td><td class="v-desc">Whether to recommend mitigation</td></tr>
+            <tr><td class="v-name">mitigation_strategy</td><td class="v-type">str</td><td class="v-desc"><span class="chip chip-r">AGGRESSIVE_LOAD_REDUCTION</span><span class="chip chip-a">MODERATE_PEAK_SHAVE</span><span class="chip chip-b">STANDARD_OPERATIONS</span><span class="chip chip-g">NONE_SAFETY_LOCKOUT</span></td></tr>
+            <tr><td class="v-name">peak_shaving_target_kw</td><td class="v-type">float kW</td><td class="v-desc">Target kW to shave</td></tr>
+            <tr><td class="v-name">ups_safety_buffer</td><td class="v-type">float %</td><td class="v-desc">100 − ups_load (remaining capacity)</td></tr>
+            <tr><td class="v-name">urgency_score</td><td class="v-type">int 1–10</td><td class="v-desc">Maps from cost_severity_index</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── M9 ── -->
+    <div class="mod-card">
+      <div class="mc-head">
+        <div class="mc-num" style="background:#0d2218;border:1px solid var(--green);color:var(--green);">M9</div>
+        <div class="mc-info">
+          <div class="mc-name">Savings Estimation Engine</div>
+          <div class="mc-cls">class EnerviaSavingsEngine &nbsp;|&nbsp; enervia_savings_engine</div>
+        </div>
+        <div class="mc-desc">Converts physical power reductions into quantified financial impact. Provides the "credibility numbers" — kW and ₹ savings — that make recommendations actionable and verifiable.</div>
+      </div>
+      <div class="mc-body">
+        <div>
+          <div class="mc-sect">Inputs</div>
+          <table class="vt">
+            <tr><td class="v-name">baseline_power</td><td class="v-type">float kW</td><td class="v-desc">Power if no action taken</td></tr>
+            <tr><td class="v-name">reduced_power</td><td class="v-type">float kW</td><td class="v-desc">Power with optimization applied</td></tr>
+            <tr><td class="v-name">tariff</td><td class="v-type">float ₹/kWh</td><td class="v-desc">Current electricity cost</td></tr>
+            <tr><td class="v-name">duration_hours</td><td class="v-type">float</td><td class="v-desc">Length of optimization window (default: 2h)</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Formulas</div>
+          <table class="vt">
+            <tr><td class="v-name">kw_saved</td><td class="v-type">formula</td><td class="v-desc">max(0, baseline − reduced)</td></tr>
+            <tr><td class="v-name">energy_saved_kwh</td><td class="v-type">formula</td><td class="v-desc">kw_saved × duration_hours</td></tr>
+            <tr><td class="v-name">rupees_saved</td><td class="v-type">formula</td><td class="v-desc">energy_saved_kwh × tariff</td></tr>
+          </table>
+          <br>
+          <div class="mc-sect">Internal State</div>
+          <table class="vt">
+            <tr><td class="v-name">cumulative_kw_saved</td><td class="v-type">float</td><td class="v-desc">Running total across all calls</td></tr>
+            <tr><td class="v-name">cumulative_rupees_saved</td><td class="v-type">float</td><td class="v-desc">Running total ₹ saved</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Output — SavingsEstimationRecord</div>
+          <table class="vt">
+            <tr><td class="v-name">kw_saved</td><td class="v-type">float kW</td><td class="v-desc">Instantaneous power reduction</td></tr>
+            <tr><td class="v-name">energy_saved_kwh</td><td class="v-type">float kWh</td><td class="v-desc">Energy saved over window duration</td></tr>
+            <tr><td class="v-name">rupees_saved_per_interval</td><td class="v-type">float ₹</td><td class="v-desc">Financial savings for this window</td></tr>
+            <tr><td class="v-name">timestamp</td><td class="v-type">datetime</td><td class="v-desc">When calculation was made</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ── M10 ── -->
+    <div class="mod-card">
+      <div class="mc-head">
+        <div class="mc-num" style="background:#0d2218;border:1px solid var(--green);color:var(--green);">M10</div>
+        <div class="mc-info">
+          <div class="mc-name">Recommendation Generator</div>
+          <div class="mc-cls">class EnerviaRecommendationEngine &nbsp;|&nbsp; enervia_recommendation_engine</div>
+        </div>
+        <div class="mc-desc">The final synthesizer. Assembles all upstream outputs into a clear, explainable, human-readable advisory recommendation. Operators trust explainable actions, not black boxes.</div>
+      </div>
+      <div class="mc-body">
+        <div>
+          <div class="mc-sect">Inputs</div>
+          <table class="vt">
+            <tr><td class="v-name">recommendation</td><td class="v-type">Cooling Recommendation Record</td><td class="v-desc">From M7</td></tr>
+            <tr><td class="v-name">savings</td><td class="v-type">Savings Estimation Record</td><td class="v-desc">From M9</td></tr>
+            <tr><td class="v-name">safety_status</td><td class="v-type">Safety Status Record</td><td class="v-desc">From M4</td></tr>
+            <tr><td class="v-name">context_reasons</td><td class="v-type">List[str]</td><td class="v-desc">Human-readable trigger list</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Decision Logic</div>
+          <table class="vt">
+            <tr><td class="v-name">if BLOCKED</td><td class="v-type">—</td><td class="v-desc">"Maintain current settings" | savings="0 kW | ₹0"</td></tr>
+            <tr><td class="v-name">if reduction ≤ 0</td><td class="v-type">—</td><td class="v-desc">"System at peak efficiency"</td></tr>
+            <tr><td class="v-name">else</td><td class="v-type">—</td><td class="v-desc">"Reduce cooling by X%" with full savings</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Output — FinalRecommendationRecord</div>
+          <table class="vt">
+            <tr><td class="v-name">action</td><td class="v-type">str</td><td class="v-desc">e.g. "Reduce cooling by 7%"</td></tr>
+            <tr><td class="v-name">window</td><td class="v-type">str</td><td class="v-desc">e.g. "18:00–20:00"</td></tr>
+            <tr><td class="v-name">savings</td><td class="v-type">str</td><td class="v-desc">e.g. "120 kW | ₹1,800"</td></tr>
+            <tr><td class="v-name">safety</td><td class="v-type">str</td><td class="v-desc"><span class="chip chip-g">SAFE</span> or <span class="chip chip-r">BLOCKED</span></td></tr>
+            <tr><td class="v-name">reason</td><td class="v-type">str</td><td class="v-desc">e.g. "Overcooling detected + Peak tariff window"</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── M11 ── -->
+    <div class="mod-card purple-card">
+      <div class="mc-head">
+        <div class="mc-num" style="background:var(--purple-dim);border:1px solid var(--purple);color:var(--purple);">M11</div>
+        <div class="mc-info">
+          <div class="mc-name">Audit &amp; Logging Service</div>
+          <div class="mc-cls">class EnerviaAuditLog &nbsp;|&nbsp; enervia_audit_log</div>
+        </div>
+        <div class="mc-desc">Provides a structured, immutable audit trail for every pipeline event. Called from all modules — never blocks execution. Critical infrastructure requires full traceability.</div>
+      </div>
+      <div class="mc-body">
+        <div>
+          <div class="mc-sect">Event Types Logged</div>
+          <table class="vt">
+            <tr><td class="v-name">INPUT_RECEIVED</td><td class="v-type">from M1</td><td class="v-desc">Raw telemetry arrived</td></tr>
+            <tr><td class="v-name">VALIDATION_RESULT</td><td class="v-type">from M2</td><td class="v-desc">Pass or fail + flags</td></tr>
+            <tr><td class="v-name">SAFETY_VETO</td><td class="v-type">from M4</td><td class="v-desc">BLOCKED decision + reason codes</td></tr>
+            <tr><td class="v-name">OPTIMIZATION_COMPUTED</td><td class="v-type">from M7/M8</td><td class="v-desc">Optimizer decision result</td></tr>
+            <tr><td class="v-name">RECOMMENDATION_GENERATED</td><td class="v-type">from M10</td><td class="v-desc">Final advisory output</td></tr>
+            <tr><td class="v-name">SYSTEM_ERROR</td><td class="v-type">any</td><td class="v-desc">Exception caught in pipeline</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Audit Status Values</div>
+          <table class="vt">
+            <tr><td class="v-name">SUCCESS</td><td class="v-type">—</td><td class="v-desc">Normal execution</td></tr>
+            <tr><td class="v-name">WARNING</td><td class="v-type">—</td><td class="v-desc">is_valid==False or stale data</td></tr>
+            <tr><td class="v-name">BLOCKED</td><td class="v-type">—</td><td class="v-desc">Safety veto applied</td></tr>
+            <tr><td class="v-name">CRITICAL</td><td class="v-type">—</td><td class="v-desc">System error / logging failure</td></tr>
+          </table>
+        </div>
+        <div>
+          <div class="mc-sect">Output — AuditLogEntry (JSON)</div>
+          <table class="vt">
+            <tr><td class="v-name">timestamp</td><td class="v-type">str</td><td class="v-desc">ISO 8601 UTC timestamp</td></tr>
+            <tr><td class="v-name">event_type</td><td class="v-type">str</td><td class="v-desc">From EventType enum</td></tr>
+            <tr><td class="v-name">status</td><td class="v-type">str</td><td class="v-desc">SUCCESS | WARNING | BLOCKED | CRITICAL</td></tr>
+            <tr><td class="v-name">payload</td><td class="v-type">Dict</td><td class="v-desc">Serialized dataclass (via asdict())</td></tr>
+            <tr><td class="v-name">module_source</td><td class="v-type">str</td><td class="v-desc">Which module generated the event</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end mod-grid -->
+</div><!-- end modules tab -->
+
+</div><!-- end content -->
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(function(t, i) {
+    var ids = ['flowchart','pseudocode','modules'];
+    t.classList.toggle('active', ids[i] === id);
+  });
+  document.querySelectorAll('.tab-pane').forEach(function(p) {
+    p.classList.toggle('active', p.id === 'tab-' + id);
+  });
+}
+</script>
+</body>
+</html>
