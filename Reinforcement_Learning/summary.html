@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Enervia — Phase 2 Technical Documentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0f14;--surface:#131920;--surface2:#1a2130;--border:#252e3a;--border2:#2e3a4a;
+  --green:#29a65e;--green-light:#3dcc75;--green-dim:#0d2218;
+  --blue:#4d9fff;--blue-dim:#0d1f35;
+  --red:#f05050;--red-dim:#280c0c;
+  --amber:#dba63a;--amber-dim:#271900;
+  --purple:#9d72f5;--purple-dim:#1a1230;
+  --teal:#2ec4b0;--teal-dim:#061e1c;
+  --text:#dce7f0;--text2:#8a9bb0;--text3:#576070;
+  --mono:'JetBrains Mono',monospace;--sans:'Sora',sans-serif;
+}
+html{font-size:15px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── LAYOUT ── */
+.page-wrap{max-width:1100px;margin:0 auto;padding:32px}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;gap:16px;flex-wrap:wrap}
+.hdr-left{display:flex;align-items:center;gap:14px;min-width:0}
+.logo-box{width:34px;height:34px;border-radius:8px;background:var(--green-dim);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-box span{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--green)}
+.hdr-title{font-family:var(--sans);font-size:1rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phase-badge{background:var(--green-dim);border:1px solid var(--green);border-radius:20px;padding:5px 14px;font-family:var(--mono);font-size:.72rem;color:var(--green);white-space:nowrap;flex-shrink:0}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.tab{background:none;border:none;color:var(--text2);font-family:var(--mono);font-size:.78rem;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .18s,border-color .18s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--green);border-bottom-color:var(--green)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:6px}
+.sec-sub{font-size:.82rem;color:var(--text2);line-height:1.6;margin-bottom:24px;max-width:780px}
+
+/* ── LEGEND ── */
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+.legend-item{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:.73rem;color:var(--text2)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── SVG WRAPPER ── */
+.svg-scroll{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+.svg-scroll svg{display:block;min-width:560px}
+
+/* ── PSEUDOCODE ── */
+.ps-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.ps-topbar{background:#1c2433;padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.ps-dots{display:flex;gap:6px}
+.ps-dot{width:12px;height:12px;border-radius:50%}
+.ps-filename{font-family:var(--mono);font-size:.75rem;color:var(--text3);margin-left:6px}
+.ps-body{background:var(--surface);padding:24px 28px;overflow-x:auto}
+pre{font-family:var(--mono);font-size:.77rem;line-height:1.85;color:var(--text);white-space:pre-wrap;overflow-wrap:break-word}
+.kw{color:#c792ea}.mod{color:#82aaff}.cmt{color:var(--text3)}.nm{color:#f78c6c}
+.val{color:#c3e88d}.str{color:#c3e88d}.safe{color:#3dcc75;font-weight:700}
+.blk{color:#f05050;font-weight:700}.sec{color:var(--amber);font-weight:700}
+.arrow{color:var(--text3)}.out{color:#3dcc75}.num{color:#f07178}.lbl{color:#89ddff}
+
+/* ── MODULE GRID ── */
+.mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.mod-grid{grid-template-columns:1fr}}
+.mod-card{background:var(--surface);border-radius:10px;border:1px solid var(--border);padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.mc-top{display:flex;align-items:center;gap:12px}
+.mc-badge{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:.75rem;flex-shrink:0;border:1.5px solid}
+.mc-badge.g{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.mc-badge.b{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
+.mc-badge.a{background:var(--amber-dim);border-color:var(--amber);color:var(--amber)}
+.mc-badge.p{background:var(--purple-dim);border-color:var(--purple);color:var(--purple)}
+.mc-name{font-weight:600;font-size:.88rem;color:var(--text)}
+.mc-class{font-family:var(--mono);font-size:.66rem;color:var(--text3);margin-top:1px;overflow-wrap:break-word}
+.mc-desc{font-size:.78rem;color:var(--text2);line-height:1.6}
+.mc-pills{display:flex;flex-wrap:wrap;gap:6px}
+.mc-pill{font-family:var(--mono);font-size:.66rem;padding:2px 9px;border-radius:4px;border:1px solid;color:var(--text2);border-color:var(--border2);background:var(--surface2)}
+.mc-pill.hi{color:#89ddff;border-color:#1a3250;background:#0a1a28}
+
+/* ── SUMMARY BOX ── */
+.summary-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:24px}
+.sb-title{font-family:var(--mono);font-size:.7rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:12px}
+.sb-steps{display:flex;flex-direction:column;gap:8px}
+.sb-step{display:flex;align-items:flex-start;gap:12px;font-size:.8rem;color:var(--text2);line-height:1.5}
+.sb-num{font-family:var(--mono);font-size:.7rem;font-weight:700;min-width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sb-num.g{background:var(--green-dim);color:var(--green);border:1px solid var(--green)}
+.sb-num.b{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue)}
+.sb-num.a{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber)}
+.sb-num.p{background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple)}
+.sb-step strong{color:var(--text);font-weight:600}
+
+/* ── CHIPS ── */
+.chip{display:inline-block;border-radius:4px;padding:1px 7px;font-family:var(--mono);font-size:.67rem;font-weight:600;border:1px solid}
+.chip-g{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.chip-r{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+.chip-a{background:var(--amber-dim);border-color:var(--amber);color:var(--amber)}
+.chip-b{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="hdr-left">
+      <div class="logo-box"><span>Ev</span></div>
+      <div class="hdr-title">Enervia System Pipeline — Technical Documentation</div>
+    </div>
+    <div class="phase-badge">Phase-2 · RL Battery Arbitrage</div>
+  </header>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="showTab('flowchart')">⬛ RL Pipeline Flowchart</button>
+    <button class="tab" onclick="showTab('pseudocode')">▶ Pseudocode</button>
+    <button class="tab" onclick="showTab('modules')">☰ Module Reference</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ TAB 1 — FLOWCHART -->
+  <div class="tab-pane active" id="tab-flowchart">
+    <div class="sec-title">RL Battery Arbitrage Pipeline</div>
+    <div class="sec-sub">Tariff schedule is read from CSV. The DQN agent observes state every hour, selects CHARGE / DISCHARGE / IDLE, and the environment steps forward. After 800 training episodes the agent converges to a buy-low discharge-high strategy.</div>
+
+    <div class="summary-box">
+      <div class="sb-title">How the model works</div>
+      <div class="sb-steps">
+        <div class="sb-step"><div class="sb-num g">1</div><div><strong>Load tariff schedule.</strong> A 24-row CSV maps each hour to a tariff (₹/kWh), status (OFF_PEAK / SHOULDER / PEAK), and severity score. This is the only external input — no live data feed.</div></div>
+        <div class="sb-step"><div class="sb-num g">2</div><div><strong>Simulate the battery environment.</strong> BatteryEnv runs a 24-step episode (1 step = 1 hour). It tracks SoC, enforces physical limits (10–95%, max 50 kW), and applies ±0.3 tariff noise each step for robustness.</div></div>
+        <div class="sb-step"><div class="sb-num b">3</div><div><strong>Agent observes state and picks an action.</strong> Each step the agent receives 4 normalised floats — time, battery level, tariff, severity — and outputs IDLE / CHARGE / DISCHARGE via epsilon-greedy selection.</div></div>
+        <div class="sb-step"><div class="sb-num b">4</div><div><strong>Reward shapes the arbitrage strategy.</strong> Charging off-peak earns +0.5; charging during peak costs −3.0. Discharging during peak earns (kW × tariff)/10. This pushes the agent to buy cheap, sell dear.</div></div>
+        <div class="sb-step"><div class="sb-num a">5</div><div><strong>DQN learns from experience replay.</strong> Each transition (s, a, r, s') is stored in a 20k buffer. Every step the agent samples 64 random transitions, computes TD targets, and backprops through a pure-numpy 4→128→128→3 network.</div></div>
+        <div class="sb-step"><div class="sb-num a">6</div><div><strong>Target network stabilises training.</strong> A frozen copy of the Q-network updates every 50 steps, preventing the moving-target problem. Epsilon decays from 1.0 → 0.05 over 800 episodes.</div></div>
+        <div class="sb-step"><div class="sb-num p">7</div><div><strong>Output: plots + terminal summary.</strong> After training, a greedy episode is run and saved as PNGs — tariff bars, SoC curve, action timeline. First run achieved a ₹1.03/kWh spread (charge avg ₹6.71, discharge avg ₹7.74).</div></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>RL environment / core loop</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>DQN agent internals</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Training loop</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Output / plots</div>
+    </div>
+    <div class="svg-scroll">
+<svg viewBox="0 0 880 980" xmlns="http://www.w3.org/2000/svg" width="880" height="980">
+<rect width="880" height="980" fill="#0b0f14"/>
+<defs>
+  <marker id="ag" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#29a65e"/></marker>
+  <marker id="ab" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#4d9fff"/></marker>
+  <marker id="aa" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#dba63a"/></marker>
+  <marker id="ap" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#9d72f5"/></marker>
+  <marker id="at" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#576070"/></marker>
+</defs>
+
+<!-- ── ROW 0: CSV Loader ── -->
+<rect x="320" y="30" width="240" height="52" rx="8" fill="#131920" stroke="#29a65e" stroke-width="1.5"/>
+<text x="440" y="52" fill="#29a65e" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" text-anchor="middle">load_tariff_schedule()</text>
+<text x="440" y="70" fill="#8a9bb0" font-family="JetBrains Mono,monospace" font-size="10" text-anchor="middle">tariff_schedule.csv → dict[hour]</text>
+
+<!-- arrow: CSV → BatteryEnv -->
+<line x1="440" y1="82" x2="440" y2="148" stroke="#29a65e" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- ── ROW 1: BatteryEnv + DQNAgent (side by side) ── -->
+<rect x="220" y="150" width="220" height="64" rx="8" fill="#131920" stroke="#29a65e" stroke-width="1.5"/>
+<text x="330" y="176" fill="#29a65e" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" text-anchor="middle">BatteryEnv</text>
+<text x="330" y="194" fill="#8a9bb0" font-family="JetBrains Mono,monospace" font-size="9.5" text-anchor="middle">200 kWh · 50 kW · η=0.92</text>
+<text x="330" y="207" fill="#576070" font-family="JetBrains Mono,monospace" font-size="9" text-anchor="middle">SoC 10–95% · noise ±0.3</text>
+
+<rect x="480" y="150" width="220" height="64" rx="8" fill="#131920" stroke="#4d9fff" stroke-width="1.5"/>
+<text x="590" y="176" fill="#4d9fff" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" text-anchor="middle">DQNAgent</text>
+<text x="590" y="194" fill="#8a9bb0" font-family="JetBrains Mono,monospace" font-size="9.5" text-anchor="middle">ε-greedy · γ=0.95 · lr=5e-4</text>
+<text x="590" y="207" fill="#576070" font-family="JetBrains Mono,monospace" font-size="9" text-anchor="middle">online + target nets · replay 20k</text>
+
+<!-- double-headed arrow between env and agent -->
+<line x1="440" y1="182" x2="482" y2="182" stroke="#4d9fff" stroke-width="1.5" marker-end="url(#ab)"/>
+<line x1="480" y1="196" x2="438" y2="196" stroke="#29a65e" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- arrow: BatteryEnv down to 24-step -->
+<line x1="330" y1="214" x2="330" y2="274" stroke="#29a65e" stroke-width="1.5"/>
+<line x1="330" y1="274" x2="440" y2="274" stroke="#29a65e" stroke-width="1.5" marker-end="url(#ag)"/>
+
+<!-- arrow: DQNAgent down to 24-step -->
+<line x1="590" y1="214" x2="590" y2="274" stroke="#4d9fff" stroke-width="1.5"/>
+<line x1="590" y1="274" x2="552" y2="274" stroke="#4d9fff" stroke-width="1.5" marker-end="url(#ab)"/>
+
+<!-- ── ROW 2: 24-step Episode ── -->
+<rect x="320" y="256" width="240" height="52" rx="8" fill="#131920" stroke="#dba63a" stroke-width="1.5"/>
+<text x="440" y="278" fill="#dba63a" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" text-anchor="middle">24-step Episode</text>
+<text x="440" y="296" fill="#8a9bb0" font-family="JetBrains Mono,monospace" font-size="9.5" text-anchor="middle">1 step = 1 hour · obs[4] → action</text>
+
+<!-- arrow down -->
+<line x1="440" y1="308" x2="440" y2="358" stroke="#dba63a" stroke-width="1.5" marker-end="url(#aa)"/>
+
+<!-- ── ROW 3: State obs box ── -->
+<rect x="270" y="360" width="340" height="64" rx="8" fill="#131920" stroke="#4d9fff" stroke-width="1.5"/>
+<text x="440" y="381" fill="#4d9fff" font-family="JetBrains Mono,monospace" font-size="10.5" font-weight="600" text-anchor="middle">State Observation</text>
+<text x="440" y="398" fill="#8a9bb0" font-family="JetBrains Mono,monospace" font-size="9.5" text-anchor="middle">[ hour/23 · soc/cap · (tariff−4)/6 · severity/10 ]</text>
+<text x="440" y="414" fill="#576070" font-family="JetBrains Mono,monospace" font-size="9" text-anchor="middle">→ agent.act(state)  →  0=IDLE · 1=CHARGE · 2=DISCHARGE</text>
+
+<!-- arrow down -->
+<line x1="440" y1="424" x2="440" y2="474" stroke="#dba63a" stroke-width="1.5" marker-end="url(#aa)"/>
+
+<!-- ── ROW 4: ReplayBuffer ── -->
+<rect x="300" y="476" width="280" height="52" rx="8" fill="#131920" stroke="#dba63a" stroke-width="1.5"/>
+<text x="440" y="498" fill="#dba63a" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" text-anchor="middle">ReplayBuffer.push()</text>
+<text x="440" y="516" fill="#8a9bb0" font-family="JetBrains Mono,monospace" font-size="9.5" text-anchor="middle">capacity 20,000 · (s, a, r, s', done)</text>
+
+<!-- arrow down -->
+<line x1="440" y1="528" x2="440" y2="578" stroke="#dba63a" stroke-width="1.5" marker-end="url(#aa)"/>
+
+<!-- ── ROW 5: DQNAgent.learn() ── -->
+<rect x="300" y="580" width="280" height="64" rx="8" fill="#131920" stroke="#4d9fff" stroke-width="1.5"/>
+<text x="440" y="602" fill="#4d9fff" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" text-anchor="middle">DQNAgent.learn()</text>
+<text x="440" y="619" fill="#8a9bb0" font-family="JetBrains Mono,monospace" font-size="9.5" text-anchor="middle">sample batch=64 · TD target · MSE</text>
+<text x="440" y="635" fill="#576070" font-family="JetBrains Mono,monospace" font-size="9" text-anchor="middle">backprop · grad clip ±1 · ε ×0.995</text>
+
+<!-- arrow down -->
+<line x1="440" y1="644" x2="440" y2="694" stroke="#4d9fff" stroke-width="1.5" marker-end="url(#ab)"/>
+
+<!-- ── ROW 6: Target Net Sync ── -->
+<rect x="300" y="696" width="280" height="52" rx="8" fill="#131920" stroke="#4d9fff" stroke-width="1.5"/>
+<text x="440" y="718" fill="#4d9fff" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" text-anchor="middle">Target Net Sync</text>
+<text x="440" y="736" fill="#8a9bb0" font-family="JetBrains Mono,monospace" font-size="9.5" text-anchor="middle">online → target every 50 steps</text>
+
+<!-- arrow down -->
+<line x1="440" y1="748" x2="440" y2="798" stroke="#dba63a" stroke-width="1.5" marker-end="url(#aa)"/>
+
+<!-- ── ROW 7: 800 episodes done? ── -->
+<polygon points="440,800 560,840 440,880 320,840" fill="#131920" stroke="#dba63a" stroke-width="1.5"/>
+<text x="440" y="836" fill="#dba63a" font-family="JetBrains Mono,monospace" font-size="10.5" font-weight="600" text-anchor="middle">800 episodes done?</text>
+
+<!-- NO branch → left loop back -->
+<line x1="320" y1="840" x2="160" y2="840" stroke="#576070" stroke-width="1.5"/>
+<line x1="160" y1="840" x2="160" y2="282" stroke="#576070" stroke-width="1.5"/>
+<line x1="160" y1="282" x2="222" y2="282" stroke="#576070" stroke-width="1.5" marker-end="url(#at)"/>
+<text x="230" y="856" fill="#576070" font-family="JetBrains Mono,monospace" font-size="10">NO → next ep</text>
+
+<!-- YES branch → right side -->
+<line x1="560" y1="840" x2="680" y2="840" stroke="#9d72f5" stroke-width="1.5"/>
+<line x1="680" y1="840" x2="680" y2="900" stroke="#9d72f5" stroke-width="1.5" marker-end="url(#ap)"/>
+<text x="568" y="830" fill="#9d72f5" font-family="JetBrains Mono,monospace" font-size="10">YES</text>
+
+<!-- ── OUTPUT COLUMN ── -->
+<rect x="590" y="902" width="220" height="44" rx="8" fill="#131920" stroke="#9d72f5" stroke-width="1.5"/>
+<text x="700" y="920" fill="#9d72f5" font-family="JetBrains Mono,monospace" font-size="10.5" font-weight="600" text-anchor="middle">plot_training()</text>
+<text x="700" y="936" fill="#8a9bb0" font-family="JetBrains Mono,monospace" font-size="9" text-anchor="middle">reward + loss curves → PNG</text>
+
+<line x1="700" y1="946" x2="700" y2="956" stroke="#9d72f5" stroke-width="1" stroke-dasharray="3,2"/>
+<text x="700" y="968" fill="#576070" font-family="JetBrains Mono,monospace" font-size="9" text-anchor="middle">+ greedy episode → plot_episode() PNG</text>
+</svg>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ TAB 2 — PSEUDOCODE -->
+  <div class="tab-pane" id="tab-pseudocode">
+    <div class="ps-wrap">
+      <div class="ps-topbar">
+        <div class="ps-dots">
+          <div class="ps-dot" style="background:#ff5f57"></div>
+          <div class="ps-dot" style="background:#febc2e"></div>
+          <div class="ps-dot" style="background:#28c840"></div>
+        </div>
+        <div class="ps-filename">enervia_rl.py</div>
+      </div>
+      <div class="ps-body"><pre>
+<span class="kw">INPUT</span>:  <span class="nm">tariff_schedule</span>   <span class="arrow">←</span> loaded from <span class="str">tariff_schedule.csv</span> <span class="cmt">(24 rows: hour, tariff, status, severity)</span>
+<span class="kw">OUTPUT</span>: <span class="str">enervia_rl_training.png</span>, <span class="str">enervia_rl_episode.png</span>, terminal summary
+
+
+<span class="sec">── ENVIRONMENT SETUP ──────────────────────────────────────────────────</span>
+
+    <span class="mod">BatteryEnv</span> constants:
+        <span class="nm">CAPACITY_KWH</span>  <span class="arrow">=</span> <span class="num">200.0</span>
+        <span class="nm">MAX_POWER_KW</span>  <span class="arrow">=</span> <span class="num">50.0</span>
+        <span class="nm">EFFICIENCY</span>    <span class="arrow">=</span> <span class="num">0.92</span>
+        <span class="nm">SOC_MIN_PCT</span>   <span class="arrow">=</span> <span class="num">0.10</span>
+        <span class="nm">SOC_MAX_PCT</span>   <span class="arrow">=</span> <span class="num">0.95</span>
+
+    state (<span class="num">4</span> floats):
+        <span class="nm">hour_norm</span>     <span class="arrow">=</span> hour / <span class="num">23.0</span>
+        <span class="nm">soc_norm</span>      <span class="arrow">=</span> soc / CAPACITY_KWH
+        <span class="nm">tariff_norm</span>   <span class="arrow">=</span> (tariff − <span class="num">4.0</span>) / <span class="num">6.0</span>
+        <span class="nm">severity_norm</span> <span class="arrow">=</span> severity / <span class="num">10.0</span>
+
+    actions:  <span class="num">0</span>=<span class="val">IDLE</span>  |  <span class="num">1</span>=<span class="val">CHARGE</span>  |  <span class="num">2</span>=<span class="val">DISCHARGE</span>
+
+
+<span class="sec">── REWARD FUNCTION ────────────────────────────────────────────────────</span>
+
+    <span class="val">CHARGE</span>:
+        <span class="kw">IF</span> <span class="val">OFF_PEAK</span>   <span class="arrow">→</span>  reward <span class="arrow">=</span> <span class="safe">+0.5</span>
+        <span class="kw">IF</span> <span class="val">SHOULDER</span>   <span class="arrow">→</span>  reward <span class="arrow">=</span> <span class="num">−0.5</span>
+        <span class="kw">IF</span> <span class="val">PEAK</span>       <span class="arrow">→</span>  reward <span class="arrow">=</span> <span class="blk">−3.0</span>
+
+    <span class="val">DISCHARGE</span>:
+        <span class="kw">IF</span> <span class="val">PEAK</span>       <span class="arrow">→</span>  reward <span class="arrow">=</span> (disch_kw × tariff) / <span class="num">10.0</span>
+        <span class="kw">IF</span> <span class="val">SHOULDER</span>   <span class="arrow">→</span>  reward <span class="arrow">=</span> (disch_kw × tariff) / <span class="num">20.0</span>
+        <span class="kw">IF</span> <span class="val">OFF_PEAK</span>   <span class="arrow">→</span>  reward <span class="arrow">=</span> <span class="blk">−1.0</span>
+
+    <span class="val">IDLE</span>:
+        <span class="kw">IF</span> <span class="val">OFF_PEAK</span> and SoC &lt; <span class="num">50%</span>   <span class="arrow">→</span>  reward <span class="arrow">=</span> <span class="num">−0.2</span>
+        <span class="kw">ELSE</span>                          <span class="arrow">→</span>  reward <span class="arrow">=</span> <span class="num">0.0</span>
+
+
+<span class="sec">── DQN AGENT ──────────────────────────────────────────────────────────</span>
+
+    Network: <span class="num">3</span>-layer numpy MLP
+        <span class="lbl">input</span>(<span class="num">4</span>) <span class="arrow">→</span> <span class="lbl">hidden</span>(<span class="num">128</span>) <span class="arrow">→</span> <span class="lbl">hidden</span>(<span class="num">128</span>) <span class="arrow">→</span> <span class="lbl">output</span>(<span class="num">3</span>)
+        activation: <span class="val">ReLU</span>,  init: <span class="val">Xavier</span>
+
+    Hyperparameters:
+        <span class="nm">gamma</span>         <span class="arrow">=</span> <span class="num">0.95</span>
+        <span class="nm">lr</span>            <span class="arrow">=</span> <span class="num">5e-4</span>
+        <span class="nm">batch_size</span>    <span class="arrow">=</span> <span class="num">64</span>
+        <span class="nm">eps_start</span>     <span class="arrow">=</span> <span class="num">1.0</span>
+        <span class="nm">eps_end</span>       <span class="arrow">=</span> <span class="num">0.05</span>
+        <span class="nm">eps_decay</span>     <span class="arrow">=</span> <span class="num">0.995</span>
+        <span class="nm">target_update</span> <span class="arrow">=</span> <span class="num">50</span> steps
+        <span class="nm">replay_size</span>   <span class="arrow">=</span> <span class="num">20,000</span>
+
+
+<span class="sec">── TRAINING LOOP ──────────────────────────────────────────────────────</span>
+
+    <span class="kw">FOR</span> <span class="nm">ep</span> <span class="arrow">=</span> <span class="num">1</span> to <span class="num">800</span>:
+        <span class="nm">state</span>  <span class="arrow">←</span>  <span class="lbl">env.reset</span>()
+        <span class="kw">FOR</span> <span class="nm">hour</span> <span class="arrow">=</span> <span class="num">0</span> to <span class="num">23</span>:
+            <span class="nm">action</span>                    <span class="arrow">←</span>  <span class="lbl">agent.act</span>(state)          <span class="cmt">// ε-greedy</span>
+            <span class="nm">next_state, reward, done</span>  <span class="arrow">←</span>  <span class="lbl">env.step</span>(action)
+            <span class="lbl">replay.push</span>(state, action, reward, next_state, done)
+            <span class="nm">loss</span>                      <span class="arrow">←</span>  <span class="lbl">agent.learn</span>()             <span class="cmt">// sample batch, MSE update</span>
+            <span class="nm">state</span>                     <span class="arrow">←</span>  next_state
+        <span class="kw">IF</span> ep % <span class="num">50</span> == <span class="num">0</span>  <span class="arrow">→</span>  run greedy eval episode
+
+
+<span class="sec">── OUTPUT ─────────────────────────────────────────────────────────────</span>
+
+    <span class="lbl">plot_training</span>()  <span class="arrow">→</span>  episode reward (raw + MA-30 + eval dots) + log loss curve
+    <span class="lbl">plot_episode</span>()   <span class="arrow">→</span>  tariff bars (colour by status) + SoC line + action bars
+    terminal:
+        <span class="out">Total reward</span>   : <span class="num">289.33</span>
+        <span class="out">CHARGE  actions</span>: <span class="num"> 10</span>  avg tariff ₹<span class="num">6.71</span>
+        <span class="out">DISCHARGE</span>      : <span class="num">  9</span>  avg tariff ₹<span class="num">7.74</span>
+        <span class="out">IDLE</span>           : <span class="num">  5</span>
+        <span class="out">Tariff spread</span>  : ₹<span class="num">1.03</span>/kWh
+</pre></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ TAB 3 — MODULE REFERENCE -->
+  <div class="tab-pane" id="tab-modules">
+    <div class="mod-grid">
+
+      <div class="mod-card">
+        <div class="mc-top">
+          <div class="mc-badge g">M1</div>
+          <div><div class="mc-name">Tariff Schedule Loader</div><div class="mc-class">load_tariff_schedule(path)</div></div>
+        </div>
+        <div class="mc-desc">Reads tariff_schedule.csv into a dict keyed by hour. Each entry holds tariff (₹/kWh), status string, and severity score. Single source of truth for all cost data.</div>
+        <div class="mc-pills">
+          <span class="mc-pill">24 rows</span>
+          <span class="mc-pill hi">hour → (tariff, status, severity)</span>
+          <span class="mc-pill">csv.DictReader</span>
+        </div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mc-top">
+          <div class="mc-badge g">M2</div>
+          <div><div class="mc-name">Battery Environment</div><div class="mc-class">class BatteryEnv</div></div>
+        </div>
+        <div class="mc-desc">Gymnasium-style 24-step episode simulating a 200 kWh BESS. Handles charge/discharge physics, SoC limits, and reward shaping per tariff period. Adds ±0.3 noise for robustness.</div>
+        <div class="mc-pills">
+          <span class="mc-pill">200 kWh · 50 kW</span>
+          <span class="mc-pill">η = 0.92</span>
+          <span class="mc-pill hi">SoC 10–95%</span>
+          <span class="mc-pill">obs[4] floats</span>
+        </div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mc-top">
+          <div class="mc-badge b">M3</div>
+          <div><div class="mc-name">DQN Agent</div><div class="mc-class">class DQNAgent + DQNNet</div></div>
+        </div>
+        <div class="mc-desc">Pure-numpy DQN. Two hidden layers (128), ReLU, Xavier init. Epsilon-greedy exploration decaying 1.0→0.05. Online and target networks sync every 50 steps. Gradients clipped to ±1.</div>
+        <div class="mc-pills">
+          <span class="mc-pill hi">4→128→128→3</span>
+          <span class="mc-pill">γ = 0.95</span>
+          <span class="mc-pill">lr = 5e-4</span>
+          <span class="mc-pill">batch 64</span>
+          <span class="mc-pill">ε decay 0.995</span>
+        </div>
+      </div>
+
+      <div class="mod-card">
+        <div class="mc-top">
+          <div class="mc-badge a">M4</div>
+          <div><div class="mc-name">Training Loop</div><div class="mc-class">train(schedule, n_episodes=800)</div></div>
+        </div>
+        <div class="mc-desc">Runs 800 episodes. Each episode: reset env, loop 24 steps — act, step, push to replay, learn. Greedy eval every 50 episodes. Returns agent, env, rewards, losses.</div>
+        <div class="mc-pills">
+          <span class="mc-pill">800 episodes</span>
+          <span class="mc-pill">eval every 50</span>
+          <span class="mc-pill hi">replay 20k</span>
+          <span class="mc-pill">seed = 42</span>
+        </div>
+      </div>
+
+      <div class="mod-card" style="grid-column:1/-1">
+        <div class="mc-top">
+          <div class="mc-badge p">M5</div>
+          <div><div class="mc-name">Output &amp; Plots</div><div class="mc-class">plot_training() · plot_episode()</div></div>
+        </div>
+        <div class="mc-desc">Two PNG outputs on dark theme. <strong style="color:var(--text)">plot_training</strong>: episode rewards (raw grey + MA-30 green + eval dots blue) and log-scale loss curve (purple). <strong style="color:var(--text)">plot_episode</strong>: tariff bars coloured by period, SoC fill line with 10/95% limits, per-hour action bars. First run: total reward 289.33, tariff spread ₹1.03/kWh.</div>
+        <div class="mc-pills">
+          <span class="mc-pill">enervia_rl_training.png</span>
+          <span class="mc-pill">enervia_rl_episode.png</span>
+          <span class="mc-pill hi">130 dpi · dark bg #0b0f14</span>
+          <span class="mc-pill">MA-30 smoothing</span>
+          <span class="mc-pill">log-scale loss</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script>
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>
