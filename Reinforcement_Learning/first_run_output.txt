@@ -1,0 +1,17 @@
+Total reward   : 289.33
+CHARGE  actions:  10  avg tariff ₹6.71
+DISCHARGE      :   9  avg tariff ₹7.74
+IDLE           :   5
+Tariff spread  : ₹1.03/kWh
+
+
+Total reward: 289.33
+The agent scored 289 points across theday. Higher = better.
+
+CHARGE actions: 10, avg tariff ₹6.71
+The agent chose to charge the battery 10 times, and on average it did when electricity cost ₹6.71/kWh.
+
+DISCHARGE actions: 9, avg tariff ₹7.74
+It discharged 9 times, when electricity cost ₹7.74/kWh on average.
+
+5 hours it did nothing — either the battery was full orempty.

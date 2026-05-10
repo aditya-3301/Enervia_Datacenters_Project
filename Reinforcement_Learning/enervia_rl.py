@@ -337,7 +337,7 @@ def plot_episode(history, out):
 
 
 if __name__ == "__main__":
-    OUT      = "/mnt/user-data/outputs"
+    OUT      = os.path.dirname(os.path.abspath(__file__))
     CSV_PATH = os.path.join(OUT, "tariff_schedule.csv")
 
     schedule = load_tariff_schedule(CSV_PATH)
